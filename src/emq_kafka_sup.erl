@@ -1,9 +1,11 @@
 %% @author hebin
-%% @doc sup method.
+%% @doc @todo Add description to emq_kafka_sup.
 
 -module(emq_kafka_sup).
 
 -behaviour(supervisor).
+
+-include("emq_kafka.hrl").
 
 %% API
 -export([start_link/0]).
@@ -26,5 +28,7 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, []} }.
+    {ok, Server} = application:get_env(?APP, server),
+    PoolSpec = ecpool:pool_spec(?APP, ?APP, emq_kafka_cli, Server),
+    {ok, {{one_for_one, 10, 100}, [PoolSpec]}}.
 
