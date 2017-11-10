@@ -1,95 +1,17 @@
 %% @author hebin
-%% @doc @todo Add description to emq_kafka_config.
+%% @doc config info load.
 
 
 -module(emq_kafka_config).
 
--include("emq_kafka.hrl").
-
--export ([register/0, unregister/0]).
-
-%%--------------------------------------------------------------------
+%% ====================================================================
 %% API functions
-%%--------------------------------------------------------------------
-register() ->
-    clique_config:load_schema([code:priv_dir(?APP)], ?APP),
-    register_formatter(),
-    register_config().
+%% ====================================================================
+-export([init/1]).
 
-unregister() ->
-    unregister_formatter(),
-    unregister_config(),
-    clique_config:unload_schema(?APP).
-
-%%--------------------------------------------------------------------
-%% Get ENV Register formatter
-%%--------------------------------------------------------------------
-register_formatter() ->
-    [clique:register_formatter(cuttlefish_variable:tokenize(Key), 
-     fun formatter_callback/2) || Key <- keys()].
-
-formatter_callback([_, _, "server"], Params) ->
-    lists:concat([proplists:get_value(host, Params), ":", proplists:get_value(port, Params)]);
-formatter_callback([_, _, "pool"], Params) ->
-    proplists:get_value(pool_size, Params);
-formatter_callback([_, _, Key], Params) ->
-    proplists:get_value(list_to_atom(Key), Params).
-
-%%--------------------------------------------------------------------
-%% UnRegister formatter
-%%--------------------------------------------------------------------
-unregister_formatter() ->
-    [clique:unregister_formatter(cuttlefish_variable:tokenize(Key)) || Key <- keys()].
-
-%%--------------------------------------------------------------------
-%% Set ENV Register Config
-%%--------------------------------------------------------------------
-register_config() ->
-    Keys = keys(),
-    [clique:register_config(Key , fun config_callback/2) || Key <- Keys],
-    clique:register_config_whitelist(Keys, ?APP).
-
-config_callback([_, _, "server"], Value0) ->
-    {Host, Port} = parse_servers(Value0),
-    {ok, Env} = application:get_env(?APP, server),
-    Env1 = lists:keyreplace(host, 1, Env, {host, Host}),
-    Env2 = lists:keyreplace(port, 1, Env1, {port, Port}),
-    application:set_env(?APP, server, Env2),
-    " successfully\n";
-config_callback([_, _, "pool"], Value) ->
-    {ok, Env} = application:get_env(?APP, server),
-    application:set_env(?APP, server, lists:keyreplace(pool_size, 1, Env, {pool_size, Value})),
-    " successfully\n";
-config_callback([_, _, Key0], Value) ->
-    Key = list_to_atom(Key0),
-    {ok, Env} = application:get_env(?APP, server),
-    application:set_env(?APP, server, lists:keyreplace(Key, 1, Env, {Key, Value})),
-    " successfully\n".
-
-%%--------------------------------------------------------------------
-%% UnRegister config
-%%--------------------------------------------------------------------
-unregister_config() ->
-    Keys = keys(),
-    [clique:unregister_config(Key) || Key <- Keys],
-    clique:unregister_config_whitelist(Keys, ?APP).
-
-%%--------------------------------------------------------------------
-%% Internal Functions
-%%--------------------------------------------------------------------
-keys() ->
-    ["zookeeper.server",
-     "kafka.pool"].
-
-format(Value) ->
-    format(Value, "").
-format([Head], Acc) ->
-    lists:concat([Acc, Head]);
-format([Head | Tail], Acc) ->
-    format(Tail, Acc ++ lists:concat([Head, ","])).
-
-parse_servers(Value) ->
-    case string:tokens(Value, ":") of
-        [Domain]       -> {Domain, 9092};
-        [Domain, Port] -> {Domain, list_to_integer(Port)}
-    end.
+%% ====================================================================
+%% Internal functions
+%% ====================================================================
+init(_Name) ->
+	cuttlefish:conf_get(_Name, Conf),
+	ok.
