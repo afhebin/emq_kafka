@@ -22,9 +22,9 @@
 start(_StartType, _StartArgs) ->
     {ok, Sup} = emq_kafka_sup:start_link(),
 	emq_kafka_hook:load(application:get_all_env()),
-    emq_kafka_config:register(),
+    %% emq_kafka_config:register(),
     {ok, Sup}.
 
 stop(_State) ->
-	emq_kafka_hook:unload(),
-    emq_kafka_config:unregister().
+	emq_kafka_hook:unload().
+    %% emq_kafka_config:unregister().
