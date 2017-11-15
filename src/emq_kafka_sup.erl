@@ -29,6 +29,8 @@ start_link() ->
 
 init([]) ->
     {ok, Server} = application:get_env(?APP, server),
-    PoolSpec = ecpool:pool_spec(?APP, ?APP, emq_kafka_cli, Server),
-    {ok, {{one_for_one, 10, 100}, [PoolSpec]}}.
+%%    PoolSpec = ecpool:pool_spec(?APP, ?APP, emq_kafka_cli, Server),
+%%    {ok, {{one_for_one, 10, 100}, [PoolSpec]}}.
+	emq_kafka_cli:connect(Server),
+	{ok, {{one_for_one, 10, 100},[]}}.
 

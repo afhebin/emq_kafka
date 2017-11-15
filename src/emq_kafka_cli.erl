@@ -4,8 +4,6 @@
 
 -module(emq_kafka_cli).
 
--behaviour(ecpool_worker).
-
 -include("emq_kafka.hrl").
 
 -include_lib("emqttd/include/emqttd.hrl").
@@ -24,5 +22,6 @@ connect(Opts) ->
 	application:ensure_all_started(ekaf).
 
 %% kafka public.
-produce_sync(_Message) -> 
-	ecpool:with_client(?APP, fun() -> ekaf:produce_sync(<<"Test">>, <<_Message>>) end).
+produce_sync(#mqtt_message{id = MsgId, pktid = PktId, from = From,
+                     qos = Qos, retain = Retain, dup = Dup, topic =Topic, payload = Payload}) -> 
+	ekaf:produce_sync(unicode:characters_to_binary(Topic), Payload).
