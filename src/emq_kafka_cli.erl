@@ -23,5 +23,7 @@ connect(Opts) ->
 
 %% kafka public.
 produce_sync(#mqtt_message{id = MsgId, pktid = PktId, from = From,
-                     qos = Qos, retain = Retain, dup = Dup, topic =Topic, payload = Payload}) -> 
-	ekaf:produce_sync(unicode:characters_to_binary(Topic), Payload).
+                     qos = Qos, retain = Retain, dup = Dup, topic =Topic, payload = Payload}) ->
+	io:format("Start send to kafka\n"),
+	io:format(Payload),
+	ekaf:produce_sync(unicode:characters_to_binary(Topic), unicode:characters_to_binary(Payload)).

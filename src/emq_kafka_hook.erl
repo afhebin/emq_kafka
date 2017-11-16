@@ -21,7 +21,7 @@ load(Env) ->
 
 %% transform message and return
 on_message_publish(Message = #mqtt_message{topic = <<"$SYS/", _/binary>>}, _Env) ->
-    emq_kafka_cli:produce_sync(Message),
+    %% emq_kafka_cli:produce_sync(Message),
 	{ok, Message};
 
 on_message_publish(Message, _Env) ->
