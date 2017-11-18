@@ -22,8 +22,11 @@ connect(Opts) ->
 	application:ensure_all_started(ekaf).
 
 %% kafka public.
-produce_sync(#mqtt_message{id = MsgId, pktid = PktId, from = From,
+produce_sync(#mqtt_message{id = MsgId, pktid = PktId, from = {ClientId, Username},
                      qos = Qos, retain = Retain, dup = Dup, topic =Topic, payload = Payload}) ->
-	io:format("Start send to kafka\n"),
-	io:format(Payload),
-	ekaf:produce_sync(unicode:characters_to_binary(Topic), unicode:characters_to_binary(Payload)).
+	Kmsg = io_lib:format("{\"qos\":\"~p\", \"retain\":\"~p\", \"dup\":\"~p\", \"msgId\":\"~p\", \"pktId\":\"~p\", \"userName\":\"~s\", \"clientId\":\"~s\", \"topic\": \"~s\", \"msg\":\"~s\"}", [i(Qos), i(Retain), i(Dup), MsgId, PktId, Username, ClientId, Topic, Payload]),
+	ekaf:produce_sync(unicode:characters_to_binary(string:concat("emq_kafka_top_", integer_to_list(MsgId rem 16))), unicode:characters_to_binary(Kmsg)).
+
+i(true)  -> 1;
+i(false) -> 0;
+i(I) when is_integer(I) -> I.
